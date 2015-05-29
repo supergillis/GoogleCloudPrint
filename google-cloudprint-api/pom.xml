@@ -5,12 +5,12 @@
     <parent>
         <groupId>th.co.geniustree</groupId>
         <artifactId>google-cloudprint</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
     
     <groupId>th.co.geniustree</groupId>
     <artifactId>google-cloudprint-api</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>google-cloudprint-api</name>
@@ -86,9 +86,16 @@
             <version>4.1.2</version>
             <type>jar</type>
         </dependency>
-        
-        
-        
+
+
+        <dependency>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client</artifactId>
+            <version>1.20.0</version>
+        </dependency>
+
+
+
         <!-- SMACK -->
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>

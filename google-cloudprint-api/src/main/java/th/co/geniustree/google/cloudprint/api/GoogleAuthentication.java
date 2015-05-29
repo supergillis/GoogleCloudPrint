@@ -6,11 +6,21 @@ package th.co.geniustree.google.cloudprint.api;
  */
 
 
-import th.co.geniustree.google.cloudprint.api.util.ResponseUtils;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import th.co.geniustree.google.cloudprint.api.exception.GoogleAuthenticationException;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.cert.CertificateException;
+import java.time.Instant;
+import java.util.Base64;
 
 /**
  *
@@ -18,7 +28,8 @@ import th.co.geniustree.google.cloudprint.api.exception.GoogleAuthenticationExce
  */
 public class GoogleAuthentication {
 
-    public static final String LOGIN_URL = "https://www.google.com/accounts/ClientLogin";
+    private static final Logger LOG = LoggerFactory.getLogger(GoogleAuthentication.class);
+    public static final String LOGIN_URL = "https://www.googleapis.com/oauth2/v3/token";
     private static final String ACCOUNT_TYPE = "HOSTED_OR_GOOGLE";
     //request by user
     private String serviceName;
@@ -47,45 +58,64 @@ public class GoogleAuthentication {
      * @throws GoogleAuthenticationException
      */
     public void login(String email, String password, String source) throws GoogleAuthenticationException {
-        InputStream inputStream = null;
         try {
-            URL url = new URL(new StringBuilder().append(LOGIN_URL)
-                    .append("?accountType=").append(ACCOUNT_TYPE)
-                    .append("&Email=").append(email)
-                    .append("&Passwd=").append(password)
-                    .append("&service=").append(serviceName)
-                    .append("&source=").append(source)
-                    .toString());
-            
-            inputStream = url.openStream();
-            String response = ResponseUtils.streamToString(inputStream);
 
-            String[] split = response.split("\n");
-            for (String string : split) {
-                String[] keyValueSplit = string.split("=");
-                if (keyValueSplit.length == 2) {
-                    String key = keyValueSplit[0];
-                    String value = keyValueSplit[1];
+            long unixTimestamp = Instant.now().getEpochSecond();
 
-                    if (key.equalsIgnoreCase("Auth")) {
-                        auth = value;
-                    } else if (key.equalsIgnoreCase("SID")) {
-                        sid = value;
-                    } else if (key.equalsIgnoreCase("LSID")) {
-                        lsid = value;
-                    }
-                }
+            String jwtHeader = "{\"alg\":\"RS256\",\"typ\":\"JWT\"}";
+            String jwtClaim = "{" +
+                    "\"iss\":\"1067711937352-4vpl9frthugphh6c4lqjf514eo4a00bi@developer.gserviceaccount.com\"," +
+                    "\"scope\":\"https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/cloudprint\"," +
+                    "\"aud\":\"https://www.googleapis.com/oauth2/v3/token\"," +
+                    "\"exp\":"+(unixTimestamp+600)+"," +
+                    "\"iat\":"+unixTimestamp+"" +
+                    "}";
+
+
+            String jwtPart = new StringBuilder().append(Base64.getUrlEncoder().encodeToString(jwtHeader.getBytes(StandardCharsets.UTF_8))).append(".").append(Base64.getUrlEncoder().encodeToString(jwtClaim.getBytes(StandardCharsets.UTF_8))).toString();
+
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            KeyStore keystore = KeyStore.getInstance("PKCS12");
+            keystore.load(new FileInputStream(new File("conf/google.p12")), "notasecret".toCharArray());
+            PrivateKey privateKey = (PrivateKey)keystore.getKey("privatekey", "notasecret".toCharArray());
+            signature.initSign(privateKey);
+
+            signature.update(jwtPart.getBytes(StandardCharsets.UTF_8));
+            byte[] signatureBytes = signature.sign();
+
+            String jwt = jwtPart+"."+Base64.getUrlEncoder().encodeToString(signatureBytes);
+
+            String postData = "grant_type="+ URLEncoder.encode("urn:ietf:params:oauth:grant-type:jwt-bearer", "UTF-8")+"&assertion="+jwt;
+
+            LOG.info("Sending OAuth2 authorization request");
+            URL url = new URL(LOGIN_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setInstanceFollowRedirects(true);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestProperty("charset", "utf-8");
+            conn.setUseCaches(false);
+            DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+            wr.write(postData.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder response = new StringBuilder();
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
             }
-        } catch (IOException ex) {
+            in.close();
+
+
+            JsonParser parser = new JsonParser();
+            JsonObject json = (JsonObject)parser.parse(response.toString());
+            String accessToken = json.get("access_token").getAsString();
+
+            this.auth = accessToken;
+
+        } catch (Exception ex) {
             throw new GoogleAuthenticationException(ex);
-        }finally{
-            if(inputStream != null){
-                try {
-                    inputStream.close();
-                } catch (IOException ex) {
-                    throw new GoogleAuthenticationException(ex);
-                }
-            }
         }
     }
 

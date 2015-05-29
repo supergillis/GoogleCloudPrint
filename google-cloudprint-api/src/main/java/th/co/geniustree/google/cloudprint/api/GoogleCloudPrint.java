@@ -228,7 +228,7 @@ public class GoogleCloudPrint {
             HttpClient httpClient = new DefaultHttpClient();
             httpPost = new HttpPost(request);
             httpPost.setHeader("X-CloudPrint-Proxy", authen.getSource());
-            httpPost.setHeader("Authorization", "GoogleLogin auth=" + authen.getAuth());
+            httpPost.setHeader("Authorization", "Bearer " + authen.getAuth());
 
             if (entity != null) {
                 httpPost.setEntity(entity);

@@ -5,12 +5,12 @@
     <parent>
         <groupId>th.co.geniustree</groupId>
         <artifactId>google-cloudprint</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>th.co.geniustree</groupId>
     <artifactId>google-cloudprint-example</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>google-cloudprint-example</name>

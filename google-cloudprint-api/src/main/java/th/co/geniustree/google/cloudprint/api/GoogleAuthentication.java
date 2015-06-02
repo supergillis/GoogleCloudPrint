@@ -50,14 +50,14 @@ public class GoogleAuthentication {
      * For login Google Service<br/>
      * <a href='https://developers.google.com/accounts/docs/AuthForInstalledApps'>https://developers.google.com/accounts/docs/AuthForInstalledApps</a>
      *
-     * @param email Google Account or Google Email
-     * @param password Email Password
+     * @param privateKeyPath Google Account or Google Email
+     * @param privateKeyName Email Password
      * @param source Short string identifying your application, for logging
      * purposes. This string take from :
      * "companyName-applicationName-VersionID".
      * @throws GoogleAuthenticationException
      */
-    public void login(String email, String password, String source) throws GoogleAuthenticationException {
+    public void login(String privateKeyPath, String privateKeyName, String source) throws GoogleAuthenticationException {
         try {
 
             long unixTimestamp = Instant.now().getEpochSecond();
@@ -76,8 +76,10 @@ public class GoogleAuthentication {
 
             Signature signature = Signature.getInstance("SHA256withRSA");
             KeyStore keystore = KeyStore.getInstance("PKCS12");
-            keystore.load(new FileInputStream(new File("conf/google.p12")), "notasecret".toCharArray());
-            PrivateKey privateKey = (PrivateKey)keystore.getKey("privatekey", "notasecret".toCharArray());
+//            keystore.load(new FileInputStream(new File("conf/google.p12")), "notasecret".toCharArray());
+//            PrivateKey privateKey = (PrivateKey)keystore.getKey("privatekey", "notasecret".toCharArray());
+            keystore.load(new FileInputStream(new File(privateKeyPath)), "notasecret".toCharArray());
+            PrivateKey privateKey = (PrivateKey)keystore.getKey(privateKeyName, "notasecret".toCharArray());
             signature.initSign(privateKey);
 
             signature.update(jwtPart.getBytes(StandardCharsets.UTF_8));

@@ -99,32 +99,32 @@ public class GoogleCloudPrint {
      * For connect to Google Cloud Print Service and Google Talk for real time
      * job notify<br/><br/>
      *
-     * @param email Google Account or Email Address
-     * @param password Email Password
+     * @param privateKeyPath Google Account or Email Address
+     * @param privateKeyName Email Password
      * @param source Short string identifying your application, for logging
      * purposes. This string take from :
      * "companyName-applicationName-VersionID".
      * @throws CloudPrintAuthenticationException
      */
-    public void connect(String email, String password, String source) throws CloudPrintAuthenticationException{
+    public void connect(String privateKeyPath, String privateKeyName, String source) throws CloudPrintAuthenticationException{
         try {
             //Google Cloud Print Service Authen
             authen = new GoogleAuthentication(CLOUD_PRINT_SERVICE);
-            authen.login(email, password, source);
+            authen.login(privateKeyPath, privateKeyName, source);
             //
             //Google Talk XMPP Authen
-            ConnectionConfiguration config = new ConnectionConfiguration(GOOGLE_TALK_URL, GOOGLE_TALK_PORT, GOOGLE_TALK_SERVICE);
-            xmppConnection = new XMPPConnection(config);
-            xmppConnection.connect();
-            xmppConnection.login(email, password);
-
-            LOG.info("Connected to {}", GoogleAuthentication.LOGIN_URL + "[" + CLOUD_PRINT_SERVICE + "] ...");
-            LOG.info("Connected to {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
-            LOG.info("Start job listener from {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
-            //
-            listenerJob(email);
-        } catch (XMPPException ex) {
-            throw new CloudPrintAuthenticationException(ex);
+//            ConnectionConfiguration config = new ConnectionConfiguration(GOOGLE_TALK_URL, GOOGLE_TALK_PORT, GOOGLE_TALK_SERVICE);
+//            xmppConnection = new XMPPConnection(config);
+//            xmppConnection.connect();
+//            xmppConnection.login(privateKeyPath, privateKeyName);
+//
+//            LOG.info("Connected to {}", GoogleAuthentication.LOGIN_URL + "[" + CLOUD_PRINT_SERVICE + "] ...");
+//            LOG.info("Connected to {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
+//            LOG.info("Start job listener from {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
+//            //
+//            listenerJob(privateKeyPath);
+//        } catch (XMPPException ex) {
+//            throw new CloudPrintAuthenticationException(ex);
         } catch (GoogleAuthenticationException ex) {
             throw new CloudPrintAuthenticationException(ex);
         }
@@ -134,8 +134,8 @@ public class GoogleCloudPrint {
      * disconnect google talk notification
      */
     public void disconnect() {
-        LOG.info("Disconnect from {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
-        xmppConnection.disconnect();
+//        LOG.info("Disconnect from {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
+//        xmppConnection.disconnect();
     }
 
     private void listenerJob(String email) {

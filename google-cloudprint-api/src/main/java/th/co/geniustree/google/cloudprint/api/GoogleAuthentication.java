@@ -6,6 +6,7 @@ package th.co.geniustree.google.cloudprint.api;
  */
 
 
+import com.google.api.client.util.Base64;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Signature;
-import java.util.Base64;
 
 /**
  *
@@ -72,7 +72,7 @@ public class GoogleAuthentication {
                     "}";
 
 
-            String jwtPart = new StringBuilder().append(Base64.getUrlEncoder().encodeToString(jwtHeader.getBytes(StandardCharsets.UTF_8))).append(".").append(Base64.getUrlEncoder().encodeToString(jwtClaim.getBytes(StandardCharsets.UTF_8))).toString();
+            String jwtPart = new StringBuilder().append(Base64.encodeBase64URLSafeString(jwtHeader.getBytes(StandardCharsets.UTF_8))).append(".").append(Base64.encodeBase64URLSafeString(jwtClaim.getBytes(StandardCharsets.UTF_8))).toString();
 
             Signature signature = Signature.getInstance("SHA256withRSA");
             KeyStore keystore = KeyStore.getInstance("PKCS12");
@@ -85,7 +85,7 @@ public class GoogleAuthentication {
             signature.update(jwtPart.getBytes(StandardCharsets.UTF_8));
             byte[] signatureBytes = signature.sign();
 
-            String jwt = jwtPart+"."+Base64.getUrlEncoder().encodeToString(signatureBytes);
+            String jwt = jwtPart+"."+Base64.encodeBase64URLSafeString(signatureBytes);
 
             String postData = "grant_type="+ URLEncoder.encode("urn:ietf:params:oauth:grant-type:jwt-bearer", "UTF-8")+"&assertion="+jwt;
 

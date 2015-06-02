@@ -17,9 +17,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.time.Instant;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Signature;
 import java.util.Base64;
 
 /**
@@ -60,7 +60,7 @@ public class GoogleAuthentication {
     public void login(String privateKeyPath, String privateKeyName, String source) throws GoogleAuthenticationException {
         try {
 
-            long unixTimestamp = Instant.now().getEpochSecond();
+            long unixTimestamp = System.currentTimeMillis()/1000L;
 
             String jwtHeader = "{\"alg\":\"RS256\",\"typ\":\"JWT\"}";
             String jwtClaim = "{" +

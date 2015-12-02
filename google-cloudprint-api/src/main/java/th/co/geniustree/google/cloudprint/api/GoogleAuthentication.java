@@ -57,14 +57,14 @@ public class GoogleAuthentication {
      * "companyName-applicationName-VersionID".
      * @throws GoogleAuthenticationException
      */
-    public void login(String privateKeyPath, String privateKeyName, String source) throws GoogleAuthenticationException {
+    public void login(String privateKeyPath, String privateKeyName, String source, String email) throws GoogleAuthenticationException {
         try {
 
             long unixTimestamp = System.currentTimeMillis()/1000L;
 
             String jwtHeader = "{\"alg\":\"RS256\",\"typ\":\"JWT\"}";
             String jwtClaim = "{" +
-                    "\"iss\":\"1067711937352-4vpl9frthugphh6c4lqjf514eo4a00bi@developer.gserviceaccount.com\"," +
+                    "\"iss\":\""+email+"\"," +
                     "\"scope\":\"https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/cloudprint\"," +
                     "\"aud\":\"https://www.googleapis.com/oauth2/v3/token\"," +
                     "\"exp\":"+(unixTimestamp+600)+"," +

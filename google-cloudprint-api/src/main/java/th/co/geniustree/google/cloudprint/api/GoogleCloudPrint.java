@@ -106,11 +106,11 @@ public class GoogleCloudPrint {
      * "companyName-applicationName-VersionID".
      * @throws CloudPrintAuthenticationException
      */
-    public void connect(String privateKeyPath, String privateKeyName, String source) throws CloudPrintAuthenticationException{
+    public void connect(String privateKeyPath, String privateKeyName, String source, String email) throws CloudPrintAuthenticationException{
         try {
             //Google Cloud Print Service Authen
             authen = new GoogleAuthentication(CLOUD_PRINT_SERVICE);
-            authen.login(privateKeyPath, privateKeyName, source);
+            authen.login(privateKeyPath, privateKeyName, source, email);
             //
             //Google Talk XMPP Authen
 //            ConnectionConfiguration config = new ConnectionConfiguration(GOOGLE_TALK_URL, GOOGLE_TALK_PORT, GOOGLE_TALK_SERVICE);

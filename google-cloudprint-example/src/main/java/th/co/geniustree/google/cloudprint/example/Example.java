@@ -64,7 +64,7 @@ public class Example {
             String email = properties.getProperty("email");
             String password = properties.getProperty("password");
 
-            cloudPrint.connect(email, password, "geniustree-cloudprint-1.0");
+            cloudPrint.connect(email, password, "geniustree-cloudprint-1.0", "some@example.com");
             //searchAllPrinters();
             //searchPrinter("fax", PrinterStatus.ALL);
             //getJobs();

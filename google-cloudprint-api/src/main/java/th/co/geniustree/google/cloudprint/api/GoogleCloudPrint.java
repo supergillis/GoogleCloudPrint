@@ -21,7 +21,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
@@ -32,10 +31,8 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.filter.AndFilter;
 import org.jivesoftware.smack.filter.FromContainsFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -44,8 +41,6 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import th.co.geniustree.google.cloudprint.api.exception.CloudPrintAuthenticationException;
-import th.co.geniustree.google.cloudprint.api.exception.GoogleAuthenticationException;
 import th.co.geniustree.google.cloudprint.api.exception.CloudPrintException;
 import th.co.geniustree.google.cloudprint.api.model.response.ControlJobResponse;
 import th.co.geniustree.google.cloudprint.api.model.response.DeletePrinterResponse;
@@ -90,44 +85,10 @@ public class GoogleCloudPrint {
     private List<JobListener> jobListeners;
     //
 
-    public GoogleCloudPrint() {
+    public GoogleCloudPrint(GoogleAuthentication authentication) {
+        authen = authentication;
         gson = new Gson();
         jobListeners = new ArrayList<JobListener>();
-    }
-
-    /**
-     * For connect to Google Cloud Print Service and Google Talk for real time
-     * job notify<br/><br/>
-     *
-     * @param privateKeyPath Google Account or Email Address
-     * @param privateKeyName Email Password
-     * @param source Short string identifying your application, for logging
-     * purposes. This string take from :
-     * "companyName-applicationName-VersionID".
-     * @throws CloudPrintAuthenticationException
-     */
-    public void connect(String privateKeyPath, String privateKeyName, String source, String email) throws CloudPrintAuthenticationException{
-        try {
-            //Google Cloud Print Service Authen
-            authen = new GoogleAuthentication(CLOUD_PRINT_SERVICE);
-            authen.login(privateKeyPath, privateKeyName, source, email);
-            //
-            //Google Talk XMPP Authen
-//            ConnectionConfiguration config = new ConnectionConfiguration(GOOGLE_TALK_URL, GOOGLE_TALK_PORT, GOOGLE_TALK_SERVICE);
-//            xmppConnection = new XMPPConnection(config);
-//            xmppConnection.connect();
-//            xmppConnection.login(privateKeyPath, privateKeyName);
-//
-//            LOG.info("Connected to {}", GoogleAuthentication.LOGIN_URL + "[" + CLOUD_PRINT_SERVICE + "] ...");
-//            LOG.info("Connected to {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
-//            LOG.info("Start job listener from {}", GOOGLE_TALK_URL + ":" + GOOGLE_TALK_PORT + "[" + GOOGLE_TALK_SERVICE + "] ...");
-//            //
-//            listenerJob(privateKeyPath);
-//        } catch (XMPPException ex) {
-//            throw new CloudPrintAuthenticationException(ex);
-        } catch (GoogleAuthenticationException ex) {
-            throw new CloudPrintAuthenticationException(ex);
-        }
     }
 
     /**
@@ -228,7 +189,7 @@ public class GoogleCloudPrint {
             HttpClient httpClient = new DefaultHttpClient();
             httpPost = new HttpPost(request);
             httpPost.setHeader("X-CloudPrint-Proxy", authen.getSource());
-            httpPost.setHeader("Authorization", "Bearer " + authen.getAuth());
+            httpPost.setHeader("Authorization", "Bearer " + authen.getAccessToken());
 
             if (entity != null) {
                 httpPost.setEntity(entity);
@@ -582,7 +543,7 @@ public class GoogleCloudPrint {
             connection = (HttpURLConnection) url.openConnection();
             connection.addRequestProperty("X-CloudPrint-Proxy", authen.getSource());
             connection.addRequestProperty("Content-Length", fileUrl.getBytes().length + "");
-            connection.addRequestProperty("Authorization", "GoogleLogin auth=" + authen.getAuth());
+            connection.addRequestProperty("Authorization", "GoogleLogin auth=" + authen.getAccessToken());
             inputStream = connection.getInputStream();
 
             ByteStreams.copy(inputStream, outputStream);

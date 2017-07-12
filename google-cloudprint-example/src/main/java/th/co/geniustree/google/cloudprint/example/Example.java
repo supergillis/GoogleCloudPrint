@@ -21,8 +21,10 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import th.co.geniustree.google.cloudprint.api.GoogleCloudPrint;
+import th.co.geniustree.google.cloudprint.api.PrivateKeyGoogleAuthentication;
 import th.co.geniustree.google.cloudprint.api.exception.CloudPrintAuthenticationException;
 import th.co.geniustree.google.cloudprint.api.exception.CloudPrintException;
+import th.co.geniustree.google.cloudprint.api.exception.GoogleAuthenticationException;
 import th.co.geniustree.google.cloudprint.api.model.Job;
 import th.co.geniustree.google.cloudprint.api.model.JobListener;
 import th.co.geniustree.google.cloudprint.api.model.JobStatus;
@@ -50,7 +52,8 @@ import th.co.geniustree.google.cloudprint.api.util.PropertiesFileUtils;
 public class Example {
 
     private static final Logger LOG = LoggerFactory.getLogger(Example.class);
-    private static final GoogleCloudPrint cloudPrint = new GoogleCloudPrint();
+    private static final PrivateKeyGoogleAuthentication authentication = new PrivateKeyGoogleAuthentication("geniustree-cloudprint-1.0");
+    private static final GoogleCloudPrint cloudPrint = new GoogleCloudPrint(authentication);
     private static Gson gson = new Gson();
 
     static {
@@ -64,7 +67,7 @@ public class Example {
             String email = properties.getProperty("email");
             String password = properties.getProperty("password");
 
-            cloudPrint.connect(email, password, "geniustree-cloudprint-1.0", "some@example.com");
+            authentication.login(email, password, "some@example.com");
             //searchAllPrinters();
             //searchPrinter("fax", PrinterStatus.ALL);
             //getJobs();
@@ -86,9 +89,12 @@ public class Example {
         } catch (CloudPrintException ex) {
             LOG.warn(null, ex);
             System.exit(1);
+        } catch (GoogleAuthenticationException ex) {
+          LOG.warn(null, ex);
+          System.exit(1);
         } catch (IOException ex) {
-            LOG.warn(null, ex);
-            System.exit(1);
+          LOG.warn(null, ex);
+          System.exit(1);
         } finally {
             //cloudPrint.disconnect();
         }
